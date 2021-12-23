@@ -39,8 +39,7 @@ def salted_hmac(key_salt, value, secret=None):
     # We need to generate a derived key from our base key.  We can do this by
     # passing the key_salt and our base key through a pseudo-random function and
     # SHA1 works nicely.
-    digest = hashes.Hash(
-        settings.CRYPTOGRAPHY_DIGEST, backend=settings.CRYPTOGRAPHY_BACKEND)
+    digest = hashes.Hash(settings.CRYPTOGRAPHY_DIGEST, backend=settings.CRYPTOGRAPHY_BACKEND)
     digest.update(key_salt + secret)
     key = digest.finalize()
 
@@ -48,10 +47,7 @@ def salted_hmac(key_salt, value, secret=None):
     # line is redundant and could be replaced by key = key_salt + secret, since
     # the hmac module does the same thing for keys longer than the block size.
     # However, we need to ensure that we *always* do this.
-    h = HMAC(
-        key,
-        settings.CRYPTOGRAPHY_DIGEST,
-        backend=settings.CRYPTOGRAPHY_BACKEND)
+    h = HMAC(key, settings.CRYPTOGRAPHY_DIGEST, backend=settings.CRYPTOGRAPHY_BACKEND)
     h.update(force_bytes(value))
     return h
 
@@ -86,11 +82,8 @@ def pbkdf2(password, salt, iterations, dklen=0, digest=None):
     password = force_bytes(password)
     salt = force_bytes(salt)
     kdf = PBKDF2HMAC(
-        algorithm=digest,
-        length=dklen,
-        salt=salt,
-        iterations=iterations,
-        backend=settings.CRYPTOGRAPHY_BACKEND)
+        algorithm=digest, length=dklen, salt=salt, iterations=iterations, backend=settings.CRYPTOGRAPHY_BACKEND
+    )
     return kdf.derive(password)
 
 
@@ -105,6 +98,7 @@ class FernetBytes:
     def __init__(self, key=None, signer=None):
         if signer is None:
             from ..core.signing import FernetSigner
+
             signer = FernetSigner()
         self._backend = settings.CRYPTOGRAPHY_BACKEND
         self._encryption_key = key or settings.CRYPTOGRAPHY_KEY
@@ -127,9 +121,7 @@ class FernetBytes:
         """
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
-        encryptor = Cipher(
-            algorithms.AES(self._encryption_key), modes.CBC(iv),
-            self._backend).encryptor()
+        encryptor = Cipher(algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
         return self._signer.sign(iv + ciphertext)
@@ -144,9 +136,7 @@ class FernetBytes:
 
         iv = data[:16]
         ciphertext = data[16:]
-        decryptor = Cipher(
-            algorithms.AES(self._encryption_key), modes.CBC(iv),
-            self._backend).decryptor()
+        decryptor = Cipher(algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend).decryptor()
         plaintext_padded = decryptor.update(ciphertext)
         try:
             plaintext_padded += decryptor.finalize()
@@ -167,9 +157,9 @@ class Fernet(FernetBytes):
     def __init__(self, key):
         key = base64.urlsafe_b64decode(key)
         if len(key) != 32:
-            raise ValueError(
-                "Fernet key must be 32 url-safe base64-encoded bytes.")
+            raise ValueError('Fernet key must be 32 url-safe base64-encoded bytes.')
         from ..core.signing import FernetSigner
+
         super(Fernet, self).__init__(key[16:], FernetSigner(key[:16]))
 
     def _encrypt_from_parts(self, data, iv):

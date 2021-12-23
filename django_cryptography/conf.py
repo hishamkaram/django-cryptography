@@ -31,6 +31,5 @@ class CryptographyConf(AppConf):
             iterations=30000,
             backend=backend,
         )
-        self.configured_data['KEY'] = kdf.derive(
-            force_bytes(self.configured_data['KEY'] or settings.SECRET_KEY))
+        self.configured_data['KEY'] = kdf.derive(force_bytes(self.configured_data['KEY'] or settings.SECRET_KEY))
         return self.configured_data

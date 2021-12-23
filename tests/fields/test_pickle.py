@@ -59,19 +59,13 @@ class TestQuerying(TestCase):
         ]
 
     def test_exact(self):
-        self.assertSequenceEqual(
-            NullablePickledModel.objects.filter(field__exact=[1]),
-            self.objs[:1])
+        self.assertSequenceEqual(NullablePickledModel.objects.filter(field__exact=[1]), self.objs[:1])
 
     def test_isnull(self):
-        self.assertSequenceEqual(
-            NullablePickledModel.objects.filter(field__isnull=True),
-            self.objs[-1:])
+        self.assertSequenceEqual(NullablePickledModel.objects.filter(field__isnull=True), self.objs[-1:])
 
     def test_in(self):
-        self.assertSequenceEqual(
-            NullablePickledModel.objects.filter(field__in=[[1], [2]]),
-            self.objs[:2])
+        self.assertSequenceEqual(NullablePickledModel.objects.filter(field__in=[[1], [2]]), self.objs[:2])
 
     def test_unsupported(self):
         with self.assertRaises(exceptions.FieldError):
@@ -82,18 +76,22 @@ class TestMigrations(TestCase):
     def test_deconstruct(self):
         field = PickledField()
         name, path, args, kwargs = field.deconstruct()
-        self.assertEqual("django_cryptography.fields.PickledField", path)
+        self.assertEqual('django_cryptography.fields.PickledField', path)
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {})
 
 
 class TestSerialization(TestCase):
     test_data = (
-        # Python 3.4
-        '[{"fields": {"field": "gANdcQAoSwFLAk5lLg=="}, "model": "fields.pickledmodel", "pk": null}]'
-    ) if pickle.HIGHEST_PROTOCOL < 5 else (
-        # Python 3.8
-        '[{"fields": {"field": "gASVCgAAAAAAAABdlChLAUsCTmUu"}, "model": "fields.pickledmodel", "pk": null}]'
+        (
+            # Python 3.4
+            '[{"fields": {"field": "gANdcQAoSwFLAk5lLg=="}, "model": "fields.pickledmodel", "pk": null}]'
+        )
+        if pickle.HIGHEST_PROTOCOL < 5
+        else (
+            # Python 3.8
+            '[{"fields": {"field": "gASVCgAAAAAAAABdlChLAUsCTmUu"}, "model": "fields.pickledmodel", "pk": null}]'
+        )
     )
 
     def test_dumping(self):
@@ -102,8 +100,7 @@ class TestSerialization(TestCase):
         self.assertEqual(json.loads(self.test_data), json.loads(data))
 
     def test_loading(self):
-        instance = list(serializers.deserialize('json',
-                                                self.test_data))[0].object
+        instance = list(serializers.deserialize('json', self.test_data))[0].object
         self.assertEqual([1, 2, None], instance.field)
 
 

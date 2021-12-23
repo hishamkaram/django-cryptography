@@ -76,7 +76,8 @@ def get_git_changeset():
         stderr=subprocess.PIPE,
         shell=True,
         cwd=repo_dir,
-        universal_newlines=True)
+        universal_newlines=True,
+    )
     timestamp = git_log.communicate()[0]
     try:
         timestamp = datetime.datetime.utcfromtimestamp(int(timestamp))
